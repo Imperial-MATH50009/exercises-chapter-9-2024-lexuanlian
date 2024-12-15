@@ -50,7 +50,8 @@ class Operator(Expression):
 
     def __str__(self):
         def format_operand(operand):
-            if isinstance(operand, Operator) and operand.precedence < self.precedence:
+            if isinstance(operand, Operator) and \
+                    operand.precedence < self.precedence:
                 return f"({operand})"
             return str(operand)
         return f" {self.symbol} ".join(map(format_operand, self.operands))
@@ -60,17 +61,21 @@ class Add(Operator):
     precedence = 1
     symbol = "+"
 
+
 class Sub(Operator):
     precedence = 1
     symbol = "-"
+
 
 class Mul(Operator):
     precedence = 2
     symbol = "*"
 
+
 class Div(Operator):
     precedence = 2
     symbol = "/"
+
 
 class Pow(Operator):
     precedence = 3
@@ -129,21 +134,26 @@ def postvisitor(expr, fn, **kwargs):
 def differentiate(expr, *o, var=None):
     raise TypeError(f"Cannot differentiate expressions of type {type(expr)}")
 
+
 @differentiate.register(Number)
 def _(expr, *o, var=None):
     return Number(0)
+
 
 @differentiate.register(Symbol)
 def _(expr, *o, var=None):
     return Number(1 if expr.value == var else 0)
 
+
 @differentiate.register(Add)
 def _(expr, *o, var=None):
     return Add(*o)
 
+
 @differentiate.register(Sub)
 def _(expr, *o, var=None):
     return Sub(*o)
+
 
 @differentiate.register(Mul)
 def _(expr, *o, var=None):
@@ -151,11 +161,13 @@ def _(expr, *o, var=None):
     du_dx, dv_dx = o
     return Add(Mul(du_dx, v), Mul(u, dv_dx))
 
+
 @differentiate.register(Div)
 def _(expr, *o, var=None):
     u, v = expr.operands
     du_dx, dv_dx = o
     return Div(Sub(Mul(du_dx, v), Mul(u, dv_dx)), Pow(v, Number(2)))
+
 
 @differentiate.register(Pow)
 def _(expr, *o, var=None):
