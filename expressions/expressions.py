@@ -99,3 +99,23 @@ class Symbol(Terminal):
         if not isinstance(value, str):
             raise TypeError("Symbol must be a string.")
         super().__init__(value)
+
+
+def postvisitor(expr, fn, **kwargs):
+    stack = []
+    visited = {}
+    stack.append(expr)
+    while stack:
+        e = stack.pop()
+        unvisited_children = []
+        for o in e.operands:
+            if o not in visited:
+                unvisited_children.append(o)
+
+        if unvisited_children:
+            stack.append(e)
+            stack.extend(unvisited_children)
+        else:
+            visited[e] = fn(e, *(visited[o] for o in e.operands), **kwargs)
+
+    return visited[expr]
